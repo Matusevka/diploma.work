@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="login-form bg-light mt-4 p-4">
+            <form method="post" class="row g-3">
+                <h1 class="h3 mb-3 font-weight-normal">Registration form</h1>
+                {{ form_start(form) }}
+                <div class="form_group">
+                    <div class="col-md-12 mb-3">
+                        {{ form_row(form.name, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+                <div class="form_group">
+                    <div class="col-md-12 mb-3">
+                        {{ form_row(form.email, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+                <div class="form_group">
+                    <div class="col-md-12 mb-3">
+                        {{ form_row(form.password.first, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+                <div class="form_group">
+                    <div class="col-md-12 mb-3">
+                        {{ form_row(form.password.second, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+                <div class="form_group">
+                    <div class="col-md-8 col-md-offset-4">
+                        <button class="btn btn-lg btn-primary float-end" type="submit">
+                            <i class="fa fa-btn fa-user"></i> Зарегистрироваться
+                        </button>
+                    </div>
+                </div>
+                {{ form_end(form) }}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
