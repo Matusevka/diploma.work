@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -39,6 +41,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string")
      */
     private $name;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Vacations::class, mappedBy="user")
+     */
+    private $vacations;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Ideas::class, mappedBy="user")
+     */
+    private $ideas;
+    
+    /**
+     * @ORM\ManyToOne(targetEntity=Tickspot::class)
+     */
+    private $tickspot;
+
+    public function __construct()
+    {
+        $this->vacations = new ArrayCollection();
+        $this->ideas = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -142,5 +165,77 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Vacations>
+     */
+    public function getVacations(): Collection
+    {
+        return $this->vacations;
+    }
+
+    public function addVacation(Vacations $vacation): self
+    {
+        if (!$this->vacations->contains($vacation)) {
+            $this->vacations[] = $vacation;
+            $vacation->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVacation(Vacations $vacation): self
+    {
+        if ($this->vacations->removeElement($vacation)) {
+            // set the owning side to null (unless already changed)
+            if ($vacation->getUser() === $this) {
+                $vacation->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ideas>
+     */
+    public function getIdeas(): Collection
+    {
+        return $this->ideas;
+    }
+
+    public function addIdea(Ideas $idea): self
+    {
+        if (!$this->ideas->contains($idea)) {
+            $this->ideas[] = $idea;
+            $idea->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIdea(Ideas $idea): self
+    {
+        if ($this->ideas->removeElement($idea)) {
+            // set the owning side to null (unless already changed)
+            if ($idea->getUser() === $this) {
+                $idea->setUser(null);
+            }
+        }
+
+        return $this;
+    }   
+    
+    public function getTickspot(): ?Tickspot
+    {
+        return $this->tickspot;
+    }
+
+    public function setTickspot(?Tickspot $tickspot): self
+    {
+        $this->tickspot = $tickspot;
+
+        return $this;
     }
 }

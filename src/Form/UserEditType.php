@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
+use App\Entity\Tickspot;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -11,9 +12,10 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\CallbackTransformer;
 
-class UserType extends AbstractType
+class UserEditType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -25,6 +27,13 @@ class UserType extends AbstractType
                     'Пользователь' => 'ROLE_USER',
                     'Администратор' => 'ROLE_ADMIN',
                 ],
+            ])
+            //->add('git_token', TextType::class, ['label' => 'Гит токен'])
+            //->add('git_username', TextType::class, ['label' => 'Гит токен'])
+            ->add('tickspot', EntityType::class, [
+                    'class' => Tickspot::class,
+                    'choice_label' => 'last_name',
+                    'label' => 'Пользователь TICK'
             ])
             ->add('password', PasswordType::class, ['label' => 'Пароль']);
         

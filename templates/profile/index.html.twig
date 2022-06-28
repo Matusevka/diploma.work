@@ -1,20 +1,123 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ProfileController!{% endblock %}
+{% block title %}Личный кабинет{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ '/var/www/src/Controller/ProfileController.php'|file_link(0) }}">src/Controller/ProfileController.php</a></code></li>
-        <li>Your template at <code><a href="{{ '/var/www/templates/profile/index.html.twig'|file_link(0) }}">templates/profile/index.html.twig</a></code></li>
-    </ul>
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="#">Личный кабинет</a>
+  <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" 
+          data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="navbar-nav">
+    <div class="nav-item text-nowrap">
+        <span class="user-account">{{ username }}</span>
+        <a class="user-account-logout nav-link px-3" href="{{ path('app_logout') }}">Выйти</a>
+    </div>
+  </div>
+</header>
+<div class="container-fluid">
+  <div class="row">
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/profile">
+              <span data-feather="user" class="align-text-bottom"></span>Профиль
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/time-tracking">
+              <span data-feather="clock" class="align-text-bottom"></span>Учет времени
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/worklogs">
+              <span data-feather="book-open" class="align-text-bottom"></span>Ворклоги
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/vacation">
+              <span data-feather="coffee" class="align-text-bottom"></span>Отпуск
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/grades">
+              <span data-feather="bar-chart-2" class="align-text-bottom"></span>Грейды
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/metrics">
+              <span data-feather="layers" class="align-text-bottom"></span>Метрики
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile/ideas">
+              <span data-feather="flag" class="align-text-bottom"></span>Идеи
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div class="col-lg-12">
+            <h4 class="h4">Профиль</h4>
+        </div>
+        <div class="col-lg-12">
+         <table class="table">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Имя</th>
+                <th scope="col">Фамилия</th>
+                <th scope="col">Почта</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">1</th>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+              <tr>
+                <th scope="row">2</th>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+              <tr>
+                <th scope="row">3</th>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+              <tr>
+                <th scope="row">4</th>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+              <tr>
+                <th scope="row">5</th>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+              <tr>
+                <th scope="row">6</th>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+      </div>
+    </main>
+  </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script>
 {% endblock %}
