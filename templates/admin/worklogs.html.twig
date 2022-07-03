@@ -9,52 +9,45 @@
             <h4 class="h4">Ворклоги</h4>
         </div>
         <div class="col-lg-12">
+            <div class="form_group">
+                <div class="col-md-8 col-md-offset-4">
+                    <button id="btn-load-worklogs" class="btn btn-success">
+                        <i class="fa fa-btn fa-user"></i> Загрузить данные из Github
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
             <table class="table">
                 <thead class="thead-light">
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Имя</th>
-                        <th scope="col">Фамилия</th>
-                        <th scope="col">Почта</th>
+                        <th scope="col">Идентификатор</th>
+                        <th scope="col">Название репозитария</th>
+                        <th scope="col">sha</th>
+                        <th scope="col">Логин пользователя</th>
+                        <th scope="col">Почта пользователя</th>
+                        <th scope="col">Сообщение</th>
+                        <th scope="col">Url на коммит</th>
+                        <th scope="col">Страница на коммит</th>
+                        <th scope="col">Страница на комментарии</th>
+                        <th scope="col">Дата коммита</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for val in worklogs %}
                     <tr>
-                        <th scope="row">1</th>
-                        <td>...</td>
-                        <td>...</td>
-                        <td>...</td>
+                        <th scope="row">{{ val.id|e }}</th>
+                        <td>{{ val.repositorieName|e }}</td>
+                        <td>{{ val.sha|e }}</td>
+                        <td>{{ val.committerName|e }}</td>
+                        <td>{{ val.committerEmail|e }}</td>
+                        <td>{{ val.message|e }}</td>
+                        <td><a href="{{val.url|e}}">Ссылка на json коммит</a></td>
+                        <td><a href="{{val.htmlUrl|e}}">Ссылка на html коммит</a></td>
+                        <td><a href="{{val.commentsUrl|e}}">Ссылка на комментарии</a></td>
+                        <td>{{ val.dateCommit.format('Y-m-d H:i')|e }}</td>
                     </tr>
-                    <tr>
-                        <th scope="row">2</th>
-                        <td>...</td>
-                        <td>...</td>
-                        <td>...</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">3</th>
-                        <td>...</td>
-                        <td>...</td>
-                        <td>...</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">4</th>
-                        <td>...</td>
-                        <td>...</td>
-                        <td>...</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">5</th>
-                        <td>...</td>
-                        <td>...</td>
-                        <td>...</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">6</th>
-                        <td>...</td>
-                        <td>...</td>
-                        <td>...</td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

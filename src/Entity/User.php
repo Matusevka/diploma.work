@@ -56,6 +56,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\ManyToOne(targetEntity=Tickspot::class)
      */
     private $tickspot;
+    
+    /**
+     * @ORM\Column(type="string")
+     */
+    private $github_login;
 
     public function __construct()
     {
@@ -120,12 +125,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see PasswordAuthenticatedUserInterface
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(?string $password): self
     {
         $this->password = $password;
 
@@ -235,6 +240,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTickspot(?Tickspot $tickspot): self
     {
         $this->tickspot = $tickspot;
+
+        return $this;
+    }
+    
+     /**
+     * @deprecated since Symfony 5.3, use getUserIdentifier instead
+     */
+    public function getGithubLogin(): string
+    {
+        return (string) $this->github_login;
+    }
+    
+     public function setGithubLogin(string $github_login): self
+    {
+        $this->github_login = $github_login;
 
         return $this;
     }

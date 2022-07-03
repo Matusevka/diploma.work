@@ -16,8 +16,11 @@ use App\Form\VacationType;
 use App\Entity\Ideas;
 use App\Entity\Tickspot;
 use App\Entity\TimeTracking;
+use App\Entity\Worklogs;
 use App\Form\UserEditType;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Github\Client;
+use Symfony\Component\HttpClient\HttplugClient;
 
 class AdminController extends AbstractController
 {
@@ -113,12 +116,20 @@ class AdminController extends AbstractController
         $username = $user->getName();
         $em = $this->getDoctrine()->getManager();
         $users = $em->getRepository(User::class)->find($id);
+        $plainpwd_old = $users->getPassword();
         $form = $this->createForm(UserEditType::class, $users);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) 
         {
             $plainpwd = $users->getPassword();
-            $encoded = $this->passwordEncoder->encodePassword($users, $plainpwd);
+            if($plainpwd)
+            {
+                $encoded = $this->passwordEncoder->encodePassword($users, $plainpwd);
+            }
+            else
+            {
+                $encoded = $plainpwd_old;
+            }
             $users->setPassword($encoded);
             $em->flush();
             return $this->redirectToRoute('app_admin');
@@ -140,12 +151,7 @@ class AdminController extends AbstractController
         $user = $this->getUser();
         $username = $user->getName();        
         $timetrackings = $this->getDoctrine()->getRepository(TimeTracking::class)->findAll();
-        
-        //$api = ApiFactory::create('eyJ0dCI6InAiLCJhbGciOiJIUzI1NiIsInR2IjoiMSJ9.eyJkIjoie1wiYVwiOjU1NjExNzksXCJpXCI6MjA1MTAsXCJjXCI6NDYwMDk1NixcInVcIjoxMzM3Njg2NSxcInJcIjpcIlVTMlwiLFwic1wiOltcIldcIixcIkZcIixcIklcIixcIlVcIixcIktcIixcIkNcIixcIkRcIixcIk1cIixcIkFcIixcIkxcIixcIlBcIl0sXCJ6XCI6W10sXCJ0XCI6MH0iLCJpYXQiOjE2NTYyNzYyMTd9.8sgi4AxLxdxl65-UBrDlY6yeyXmnHR3uSFLhzGSZLq0');
-//$allContacts = $api->account()->getAll();
-        //$api = new Api('eyJ0dCI6InAiLCJhbGciOiJIUzI1NiIsInR2IjoiMSJ9.eyJkIjoie1wiYVwiOjU1NjExNzksXCJpXCI6MjA1MTAsXCJjXCI6NDYwMDk1NixcInVcIjoxMzM3Njg2NSxcInJcIjpcIlVTMlwiLFwic1wiOltcIldcIixcIkZcIixcIklcIixcIlVcIixcIktcIixcIkNcIixcIkRcIixcIk1cIixcIkFcIixcIkxcIixcIlBcIl0sXCJ6XCI6W10sXCJ0XCI6MH0iLCJpYXQiOjE2NTYyNzYyMTd9.8sgi4AxLxdxl65-UBrDlY6yeyXmnHR3uSFLhzGSZLq0');
-        //$wrike = ApiFactory::create('eyJ0dCI6InAiLCJhbGciOiJIUzI1NiIsInR2IjoiMSJ9.eyJkIjoie1wiYVwiOjU1NjExNzksXCJpXCI6MjA1MTAsXCJjXCI6NDYwMDk1NixcInVcIjoxMzM3Njg2NSxcInJcIjpcIlVTMlwiLFwic1wiOltcIldcIixcIkZcIixcIklcIixcIlVcIixcIktcIixcIkNcIixcIkRcIixcIk1cIixcIkFcIixcIkxcIixcIlBcIl0sXCJ6XCI6W10sXCJ0XCI6MH0iLCJpYXQiOjE2NTYyNzYyMTd9.8sgi4AxLxdxl65-UBrDlY6yeyXmnHR3uSFLhzGSZLq0');
-       // dump($api->getAccountResource()->getAll());
+
         return $this->render('admin/time-tracking.html.twig', [
             'username' => $username,
             'menus' => $this->menus,
@@ -170,12 +176,13 @@ class AdminController extends AbstractController
             {
                 foreach ($users as $val)
                 {
+                    $uid = $val->id;
                     $em = $this->getDoctrine()->getManager();
-                    $tickspot = $em->getRepository(Tickspot::class)->findBy(array('uid' => $val->id));
+                    $tickspot = $em->getRepository(Tickspot::class)->findOneBy(array('uid' => $uid));
                     if(empty($tickspot))
                     {
                         $tickspot = new Tickspot();
-                        $tickspot->setUid($val->id);
+                        $tickspot->setUid($uid);
                         $tickspot->setFirstName($val->first_name);
                         $tickspot->setLastName($val->last_name);
                         $tickspot->setEmail($val->email);
@@ -183,57 +190,61 @@ class AdminController extends AbstractController
                         $em->flush();
                         $result = true;
                     }
-                    $date_max_res = $em->getRepository(TimeTracking::class)->findByMaxUpdatedAt();
-                    $date_max_start = new \DateTime();
-                    $date_max_end = new \DateTime();
-                    if(!empty($date_max_res) && !empty($date_max_res[0]['date_max']))
+                    $user = $em->getRepository(User::class)->findOneBy(array('tickspot' => $tickspot));
+                    if(!empty($user))
                     {
-                        $date_max_start = new \DateTime($date_max_res[0]['date_max']);
-                        $date_max_start->modify("+1 hour");
-                    }
-
-                    $entrie_json = $tickspots->getEntries(null, $date_max_start->format('Y-m-d\TH:i:s.'), $date_max_end->format('Y-m-d\TH:i:s.'), null, null, $val->id, null);
-                    if(!empty($entrie_json))
-                    {
-                        $entries = json_decode($entrie_json);
-                        if(!empty($entries))
+                        $date_max_res = $em->getRepository(TimeTracking::class)->findByMaxUpdatedAt();
+                        $date_max_start = new \DateTime();
+                        $date_max_end = new \DateTime();
+                        if(!empty($date_max_res) && !empty($date_max_res[0]['date_max']))
                         {
-                            foreach ($entries as $val)
+                            $date_max_start = new \DateTime($date_max_res[0]['date_max']);
+                            $date_max_start->modify("+1 hour");
+                        }
+
+                        $entrie_json = $tickspots->getEntries(null, $date_max_start->format('Y-m-d\TH:i:s.'), $date_max_end->format('Y-m-d\TH:i:s.'), null, null, $uid, null);
+                        if(!empty($entrie_json))
+                        {
+                            $entries = json_decode($entrie_json);
+                            if(!empty($entries))
                             {
-                                $task_json = $tickspots->getUserDetails($val->task_id);
-                                if(!empty($task_json))
+                                foreach ($entries as $val_sub)
                                 {
-                                    $task = json_decode($task_json);
-                                    if(!empty($task))
+                                    $task_json = $tickspots->getUserDetails($val_sub->task_id);
+                                    if(!empty($task_json))
                                     {
-                                        $time_tracking_uid = $em->getRepository(TimeTracking::class)->findBy(array('uid' => $val->id));
-                                        if(!empty($time_tracking_uid) && !empty($time_tracking_uid[0]) && !empty($time_tracking_uid[0]->getId()))
+                                        $task = json_decode($task_json);
+                                        if(!empty($task))
                                         {
-                                            $time_tracking = $em->getRepository(TimeTracking::class)->find($time_tracking_uid[0]->getId());
-                                            $time_tracking->setHours($val->hours);
-                                            $time_tracking->setNotes($val->notes);
-                                            $time_tracking->setTask($task->name);
-                                            $entrie_updated_at = new \DateTime($val->updated_at);
-                                            $time_tracking->setUpdatedAt($entrie_updated_at);
+                                            $time_tracking_uid = $em->getRepository(TimeTracking::class)->findBy(array('uid' => $val_sub->id));
+                                            if(!empty($time_tracking_uid) && !empty($time_tracking_uid[0]) && !empty($time_tracking_uid[0]->getId()))
+                                            {
+                                                $time_tracking = $em->getRepository(TimeTracking::class)->find($time_tracking_uid[0]->getId());
+                                                $time_tracking->setHours($val_sub->hours);
+                                                $time_tracking->setNotes($val_sub->notes);
+                                                $time_tracking->setTask($task->name);
+                                                $entrie_updated_at = new \DateTime($val_sub->updated_at);
+                                                $time_tracking->setUpdatedAt($entrie_updated_at);
+                                            }
+                                            else 
+                                            {
+                                                $time_tracking = new TimeTracking();
+                                                $time_tracking->setDate($val_sub->date);
+                                                $time_tracking->setUserId($val_sub->user_id);
+                                                $time_tracking->setUrl($val_sub->url);
+                                                $time_tracking->setUid($val_sub->id);
+                                                $entrie_created_at = new \DateTime($val_sub->created_at);
+                                                $time_tracking->setCreatedAt($entrie_created_at);
+                                                $time_tracking->setHours($val_sub->hours);
+                                                $time_tracking->setNotes($val_sub->notes);
+                                                $time_tracking->setTask($task->name);
+                                                $entrie_updated_at = new \DateTime($val_sub->updated_at);
+                                                $time_tracking->setUpdatedAt($entrie_updated_at);
+                                                $em->persist($time_tracking);
+                                            }
+                                            $em->flush();
+                                            $result = true;
                                         }
-                                        else 
-                                        {
-                                            $time_tracking = new TimeTracking();
-                                            $time_tracking->setDate($val->date);
-                                            $time_tracking->setUserId($val->user_id);
-                                            $time_tracking->setUrl($val->url);
-                                            $time_tracking->setUid($val->id);
-                                            $entrie_created_at = new \DateTime($val->created_at);
-                                            $time_tracking->setCreatedAt($entrie_created_at);
-                                            $time_tracking->setHours($val->hours);
-                                            $time_tracking->setNotes($val->notes);
-                                            $time_tracking->setTask($task->name);
-                                            $entrie_updated_at = new \DateTime($val->updated_at);
-                                            $time_tracking->setUpdatedAt($entrie_updated_at);
-                                            $em->persist($time_tracking);
-                                        }
-                                        $em->flush();
-                                        $result = true;
                                     }
                                 }
                             }
@@ -260,7 +271,6 @@ class AdminController extends AbstractController
             $result = true;
             $message = 'Данных нет';
         }
-        
         $response = new Response();
         $response->setContent(json_encode([
             'success' => $result,
@@ -277,11 +287,83 @@ class AdminController extends AbstractController
     {
         $user = $this->getUser();
         $username = $user->getName();
+        $em = $this->getDoctrine()->getManager();
+        $worklogs = $em->getRepository(Worklogs::class)->findAll();
+        
         return $this->render('admin/worklogs.html.twig', [
             'username' => $username,
             'menus' => $this->menus,
-            'active' => 'worklogs'
+            'active' => 'worklogs',
+            'worklogs' => $worklogs
         ]);
+    }
+    
+    /**
+     * @Route("/admin/load-worklogs", name="app_admin_load_worklogs")
+     */
+    public function loadWorklogs(): Response
+    {
+        $result = false;
+        $message = '';
+        $repo = 'Matusevka';
+        $client = Client::createWithHttpClient(new HttplugClient());
+        $client->authenticate('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', null, \Github\AuthMethod::ACCESS_TOKEN);
+        $em = $this->getDoctrine()->getManager();
+        $users = $em->getRepository(User::class)->findAll();
+        if(!empty($users))
+        {
+            foreach ($users as $val)
+            {
+                if($val->getGithubLogin())
+                {
+                    $repositories = $client->api('user')->repositories($repo);
+                    if(!empty($repositories))
+                    {
+                        foreach ($repositories as $repositorie)
+                        {
+                            $commits = $client->api('repo')->commits()->all($repo, $repositorie['name'], []);
+                            foreach ($commits as $commit)
+                            {
+                                $worklog_uid = $em->getRepository(Worklogs::class)->findBy(array('sha' => $commit['sha']));
+                                if(empty($worklog_uid) || empty($worklog_uid[0]) || empty($worklog_uid[0]->getId()))
+                                {
+                                    $worklog = new Worklogs();
+                                    $worklog->setGithubLogin($val->getGithubLogin());
+                                    $worklog->setRepositorieName($repositorie['name']);
+                                    $worklog->setSha($commit['sha']);
+                                    $worklog->setCommitterName($commit['commit']['committer']['name']);
+                                    $worklog->setCommitterEmail($commit['commit']['committer']['email']);
+                                    $worklog->setMessage($commit['commit']['message']);
+                                    $worklog->setUrl($commit['url']);
+                                    $worklog->setHtmlUrl($commit['html_url']);
+                                    $worklog->setCommentsUrl($commit['comments_url']);                                
+                                    $date_commit = new \DateTime($commit['commit']['committer']['date']);
+                                    $worklog->setDateCommit($date_commit);
+                                    $em->persist($worklog);
+                                }
+                                $em->flush();
+                                $result = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if($result)
+        {
+            $message = 'Данных загружены';
+        }
+        else
+        {
+            $message = 'Данные уже загружены';
+        }
+        $response = new Response();
+        $response->setContent(json_encode([
+            'success' => $result,
+            'message' => $message
+        ]));
+        $response->headers->set('Content-Type', 'application/json');
+        return $response;
     }
     
      /**

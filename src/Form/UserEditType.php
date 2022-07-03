@@ -35,7 +35,8 @@ class UserEditType extends AbstractType
                     'choice_label' => 'last_name',
                     'label' => 'Пользователь TICK'
             ])
-            ->add('password', PasswordType::class, ['label' => 'Пароль']);
+            ->add('github_login', TextType::class, ['label' => 'Логин Github'])  
+            ->add('password', PasswordType::class, ['label' => 'Пароль', 'required' => false]);
         
         $builder->get('roles')
             ->addModelTransformer(new CallbackTransformer(
