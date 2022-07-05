@@ -50,6 +50,17 @@ class TimeTrackingRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+    
+    public function findAllForUsers(): ?array
+    {
+        $entityManager = $this->getEntityManager();
+        return $entityManager->createQueryBuilder()->
+                  select ('tt.id, tt.date, tt.hours, tt.notes, tt.task, tt.url, tt.created_at, t.updated_at, t.last_name, t.first_name')->
+                  from('App\Entity\TimeTracking', 'tt')->
+                  leftJoin('App\Entity\Tickspot', 't', 'with', 't.uid = tt.user_id')->
+                  where('tt.id != 1')->
+                getQuery()->getResult();
+    }
 
 //    public function findOneBySomeField($value): ?TimeTracking
 //    {

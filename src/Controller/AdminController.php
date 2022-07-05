@@ -7,8 +7,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use App\Service\Tickspots;
-use Zibios\WrikePhpSdk\ApiFactory;
-use Zibios\WrikePhpLibrary\Api;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Entity\Vacations;
@@ -18,6 +16,7 @@ use App\Entity\Tickspot;
 use App\Entity\TimeTracking;
 use App\Entity\Worklogs;
 use App\Form\UserEditType;
+use App\Form\IdeaType;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Github\Client;
 use Symfony\Component\HttpClient\HttplugClient;
@@ -150,7 +149,7 @@ class AdminController extends AbstractController
     {
         $user = $this->getUser();
         $username = $user->getName();        
-        $timetrackings = $this->getDoctrine()->getRepository(TimeTracking::class)->findAll();
+        $timetrackings = $this->getDoctrine()->getRepository(TimeTracking::class)->findAllForUsers();
 
         return $this->render('admin/time-tracking.html.twig', [
             'username' => $username,
@@ -474,6 +473,59 @@ class AdminController extends AbstractController
             'menus' => $this->menus,
             'active' => 'ideas',
             'ideas' => $ideas
+        ]);
+    }
+    
+    /**
+     * @Route("/admin/add-idea", name="app_admin_add_idea")
+     */
+    public function addIdea(Request $request): Response
+    {
+        $user = $this->getUser();
+        $username = $user->getName();        
+        $idea = new Ideas();
+        $form = $this->createForm(IdeaType::class, $idea);
+        $form->handleRequest($request);
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $date = new \DateTime();
+            $idea->setDateCreate($date);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($idea);
+            $em->flush();
+            return $this->redirectToRoute('app_admin_ideas');
+        }
+        
+        return $this->render('admin/add-idea.html.twig', [
+            'username' => $username,
+            'menus' => $this->menus,
+            'active' => 'ideas',
+            'form' => $form->createView()
+        ]);
+    }
+    
+     /**
+     * @Route("/admin/edit-idea/{id}", name="app_admin_edit_idea")
+     */
+    public function editIdea(Request $request, int $id): Response
+    {
+        $user = $this->getUser();
+        $username = $user->getName();
+        $em = $this->getDoctrine()->getManager();
+        $idea = $em->getRepository(Ideas::class)->find($id);
+        $form = $this->createForm(IdeaType::class, $idea);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) 
+        {
+            $em->flush();
+            return $this->redirectToRoute('app_admin_ideas');
+        }
+        
+        return $this->render('admin/edit-idea.html.twig', [
+            'username' => $username,
+            'menus' => $this->menus,
+            'active' => 'ideas',
+            'form' => $form->createView()
         ]);
     }
 }

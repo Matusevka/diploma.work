@@ -29,7 +29,7 @@
                         <th scope="col">Ссылка на задачу</th>
                         <th scope="col">Дата обновления</th>
                         <th scope="col">Дата создания</th>
-                        <th scope="col">Идентификатор пользователя</th>
+                        <th scope="col">Пользователь</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,9 +41,9 @@
                         <td>{{ val.notes|e }}</td>
                         <td>{{ val.task|e }}</td>
                         <td>{{ val.url|e }}</td>                        
-                        <td>{{ (val.createdAt) ? val.createdAt.format('Y-m-d H:i') : ''|e }}</td>
-                        <td>{{ val.updatedAt.format('Y-m-d H:i')|e }}</td>
-                        <td>{{ val.getUserId|e }}</td>
+                        <td>{{ (val.created_at) ? val.created_at.format('Y-m-d H:i') : ''|e }}</td>
+                        <td>{{ (val.updated_at) ? val.updated_at.format('Y-m-d H:i') : ''|e }}</td>
+                        <td>{{ val.first_name|e }} {{val.first_name|e }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

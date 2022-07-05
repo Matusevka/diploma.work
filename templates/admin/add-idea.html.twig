@@ -1,0 +1,37 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Админка: Идея{% endblock %}
+
+{% block container %}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div class="col-lg-12">
+            <h4 class="h4">Идея</h4>
+        </div>
+        <div class="col-lg-12">
+            <form method="post" class="row g-3">
+                <h1 class="h5 mb-3 font-weight-normal">Добавление идеи</h1>
+                {{ form_start(form) }}
+                <div class="form_group">
+                    <div class="col-md-12 mb-3">
+                        {{ form_row(form.name, {'label': 'Идея', 'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+                <div class="form_group">
+                    <div class="col-md-12 mb-3">
+                        {{ form_row(form.user, {'label': 'Пользователь', 'attr': {'class': 'form-control'}}) }}
+                    </div>
+                </div>
+                <div class="form_group">
+                    <div class="col-md-8 col-md-offset-4">
+                        <button class="btn btn-lg btn-primary float-end" type="submit">
+                            <i class="fa fa-btn fa-user"></i> Сохранить
+                        </button>
+                    </div>
+                </div>
+                {{ form_end(form) }}
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}
